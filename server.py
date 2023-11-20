@@ -292,7 +292,7 @@ def getPokemonRanking(trainerPokemon):
     "dragon": 3,
     "electric": 4,
     "fairy": 5,
-    "fight": 6,
+    "fighting": 6,
     "fire": 7,
     "flying": 8,
     "ghost": 9,
