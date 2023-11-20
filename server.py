@@ -103,7 +103,7 @@ def teardown_request(exception):
 #
 
 def loginPage(error=False, createError = False):
-  context = dict(error="Invalid login information") if error else dict(createError = "Username already exists") if createError else dict()
+  context = dict(error="Invalid login information") if error else dict(createError = "Invalid account creation information") if createError else dict()
   
   return render_template("login.html", **context)
 
