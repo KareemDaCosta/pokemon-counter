@@ -212,7 +212,7 @@ def trainer(trainer_name):
 @app.route('/trainer-name/', methods=['POST'])
 def trainer_name():
   trainer_name = request.form['name'] if "name" in request.form else None
-  if trainer_name == None:
+  if trainer_name == None or trainer_name=="":
     return redirect('/home/')
   return redirect('/trainer-search/'+trainer_name)
 
