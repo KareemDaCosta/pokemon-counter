@@ -9,4 +9,66 @@
 	<body>
 		<h1>Trainer {{trainer[0]}}</h1>
 	</body>
+	<p>
+	<div>Region: {{trainer[3]}}</div>
+	{% if trainer[1] != None %}
+		<div>Gym Name: {{trainer[1]}}</div>
+		<div>Gym Type: {{trainer[2]}}</div>
+	{% endif %}
+	</p>
+
+	<h3>Pokemon</h2>
+	<table>
+	<th>Pokedex Number</th>
+	<th>Name</th>
+	<th>Attack</th>
+	<th>Defense</th>
+	<th>Hp</th>
+	<th>Special Attack</th>
+	<th>Special Defense</th>
+	<th>Speed</th>
+	<th>Weight</th>
+	<th>Generation</th>
+	<th>Is Legendary?</th>
+	{% for n in pokemon %}
+		<tr>
+		{% for p in n[:-1] %}
+			<td>{{p}}</td>
+		{% endfor %}
+		{% if n[-1] == 1%}
+			<td>Yes</td>
+		{% else %}
+			<td>No</td>
+		{% endif %}
+		</tr>
+	{% endfor %}
+	</table>
+
+	<h2>Your Best Pokemon</h2>
+	<table>
+		<th>Pokedex Number</th>
+		<th>Name</th>
+		<th>Attack</th>
+		<th>Defense</th>
+		<th>Hp</th>
+		<th>Special Attack</th>
+		<th>Special Defense</th>
+		<th>Speed</th>
+		<th>Weight</th>
+		<th>Generation</th>
+		<th>Is Legendary?</th>
+		{% for n in your_pokemon %}
+			<tr>
+			{% for p in n[:-1] %}
+				<td>{{p}}</td>
+			{% endfor %}
+			{% if n[-1] == 1%}
+				<td>Yes</td>
+			{% else %}
+				<td>No</td>
+			{% endif %}
+			</tr>
+		{% endfor %}
+		</table>
+
 </html>

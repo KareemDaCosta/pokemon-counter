@@ -191,24 +191,6 @@ def gym():
   
   return render_template("gym.html", **context)
 
-@app.route('/trainer/<trainer_name>')
-def trainer(trainer_name):
-  cursor = g.conn.execute(text("SELECT * FROM trainer WHERE name = :trainer_name"), {"trainer_name":trainer_name})
-  trainer = None
-  for result in cursor:
-    trainer = result
-  cursor.close()
-  
-  cursor = g.conn.execute(text("SELECT P.pokedex_number, P.name, P.attack, P.defense, P.hp, P.sp_attack, P.sp_defense, P.speed, P.weight, P.generation, P.is_legendary FROM pokemon P, trainer_owns T WHERE T.trainer_name = :trainer_name AND T.trainer_region = :trainer_region AND T.pokedex_number = P.pokedex_number"), {"trainer_name":trainer[0], "trainer_region":trainer[3]})
-  pokemon = []
-  for result in cursor:
-    pokemon.append(result)
-  cursor.close()
-    
-  context = dict(username=username, name=name, trainer=trainer, pokemon=pokemon)
-  
-  return render_template("trainer.html", **context)
-
 @app.route('/trainer-name/', methods=['POST'])
 def trainer_name():
   trainer_name = request.form['name'] if "name" in request.form else None
@@ -226,6 +208,25 @@ def trainer_search(trainer_name):
   context = dict(username=username, name=name, trainers=trainers)
 
   return render_template("trainer-search.html", **context)
+
+@app.route('/trainer/<trainer_name>')
+def trainer(trainer_name):
+  cursor = g.conn.execute(text("SELECT * FROM trainer WHERE name = :trainer_name"), {"trainer_name":trainer_name})
+  trainer = None
+  for result in cursor:
+    trainer = list(result)
+  trainer[2] = trainer[2][0].upper() + trainer[2][1:] if trainer[2] != None else None
+  cursor.close()
+  
+  cursor = g.conn.execute(text("SELECT P.pokedex_number, P.name, P.attack, P.defense, P.hp, P.sp_attack, P.sp_defense, P.speed, P.weight, P.generation, P.is_legendary FROM pokemon P, trainer_owns T WHERE T.trainer_name = :trainer_name AND T.trainer_region = :trainer_region AND T.pokedex_number = P.pokedex_number"), {"trainer_name":trainer[0], "trainer_region":trainer[3]})
+  pokemon = []
+  for result in cursor:
+    pokemon.append(result)
+  cursor.close()
+    
+  context = dict(username=username, name=name, trainer=trainer, pokemon=pokemon)
+  
+  return render_template("trainer.html", **context)
 
   
 @app.route('/test')
