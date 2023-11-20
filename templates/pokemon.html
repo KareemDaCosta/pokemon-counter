@@ -1,0 +1,52 @@
+<html>
+	<style>
+		body {
+			font-size: 15pt;
+			font-family: arial;
+		}
+	</style>
+
+	<body>
+        <h1>View Your Pokemon</h1>
+        <p>Here are all the pokemon you have in your pokedex!</p>
+        <p>
+            <table>
+                <th>Pokedex Number</th>
+                <th>Name</th>
+                <th>Attack</th>
+                <th>Defense</th>
+                <th>Hp</th>
+                <th>Special Attack</th>
+                <th>Special Defense</th>
+                <th>Speed</th>
+                <th>Weight</th>
+                <th>Generation</th>
+                <th>Is Legendary?</th>
+                {% for n in pokemon %}
+                    <tr>
+                    {% for p in n[:-1] %}
+                        <td>{{p}}</td>
+                    {% endfor %}
+                    {% if n[-1] == 1%}
+                        <td>Yes</td>
+                    {% else %}
+                        <td>No</td>
+                    {% endif %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </p>
+
+        <p>
+            <a href="/pokemon/add">Add a Pokemon</a>
+            <a href="/pokemon/delete">Delete a Pokemon</a>
+        </p>
+
+		<footer>
+			<p>
+				<a href="/home">Home</a>
+				<a href="/pokemon">View Pokemon</a>
+			</p>
+		</footer>
+	</body>
+</html>

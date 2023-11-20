@@ -1,0 +1,56 @@
+<html>
+	<style>
+		body {
+			font-size: 15pt;
+			font-family: arial;
+		}
+	</style>
+
+	<body>
+        <h1>Delete a Pokemon</h1>
+        <div style="color: red">{{error}}</div>
+        <p>
+            <table>
+                <th>Delete Pokemon?</th>
+                <th>Pokedex Number</th>
+                <th>Name</th>
+                <th>Attack</th>
+                <th>Defense</th>
+                <th>Hp</th>
+                <th>Special Attack</th>
+                <th>Special Defense</th>
+                <th>Speed</th>
+                <th>Weight</th>
+                <th>Generation</th>
+                <th>Is Legendary?</th>
+                    {% for n in pokemon %}
+                    <form action="/pokemon/delete/{{n[0]}}">
+                        <tr>
+                            <td><input type="submit" value="Delete" /></td>
+                            {% for p in n[:-1] %}
+                                <td>{{p}}</td>
+                            {% endfor %}
+                            {% if n[-1] == 1%}
+                                <td>Yes</td>
+                            {% else %}
+                                <td>No</td>
+                            {% endif %}
+                        </tr>
+                    </form>
+                    {% endfor %}
+            </table>
+        </p>
+
+        <p>
+            <a href="/pokemon/add">Add a Pokemon</a>
+            <a href="/pokemon/delete">Delete a Pokemon</a>
+        </p>
+
+		<footer>
+			<p>
+				<a href="/home">Home</a>
+				<a href="/pokemon">View Pokemon</a>
+			</p>
+		</footer>
+	</body>
+</html>

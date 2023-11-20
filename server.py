@@ -291,6 +291,73 @@ def getPokemonRanking(trainerPokemon):
             pokemonScores[myPokemon[0]] += 1
   pokemon = sorted(pokemon, key=lambda x: pokemonScores[x[0]], reverse=True)
   return pokemon
+
+@app.route('/pokemon/')
+def pokemonPage():
+  cursor = g.conn.execute(text("SELECT P.pokedex_number, P.name, P.attack, P.defense, P.hp, P.sp_attack, P.sp_defense, P.speed, P.weight, P.generation, P.is_legendary FROM pokemon P, account_owns A WHERE A.username = :username AND A.pokedex_number = P.pokedex_number"), {"username":username})
+  pokemon = []
+  for result in cursor:
+    pokemon.append(result)
+  cursor.close()
+  
+  context = dict(username=username, name=name, pokemon=pokemon)
+  return render_template("pokemon.html", **context)
+
+@app.route('/pokemon/add')
+def addPokemon():
+  cursor = g.conn.execute(text("SELECT * FROM pokemon P WHERE P.pokedex_number NOT IN (SELECT P.pokedex_number FROM pokemon P, account_owns A WHERE A.username = :username AND A.pokedex_number = P.pokedex_number)"), {"username":username})
+  pokemon = []
+  for result in cursor:
+    pokemon.append(result)
+  cursor.close()
+  
+  context = dict(username=username, name=name, pokemon=pokemon)
+  return render_template("add-pokemon.html", **context)
+
+@app.route('/pokemon-name/', methods=['POST'])
+def pokemon_name():
+  pokemon_name = request.form['name'] if "name" in request.form else None
+  if pokemon_name == None or pokemon_name=="":
+    return redirect('/home/')
+  return redirect('/pokemon-search/'+pokemon_name)
+
+
+@app.route('/pokemon-search/<pokemon_name>')
+def pokemon_search(pokemon_name):
+  cursor = g.conn.execute(text("SELECT * FROM pokemon WHERE name LIKE :pokemon_name"), {"pokemon_name":pokemon_name+"%"})
+  pokemon = []
+  for result in cursor:
+    pokemon.append(result)
+  cursor.close()
+  context = dict(username=username, name=name, pokemon=pokemon)
+  
+  return render_template("pokemon-search.html", **context)
+
+
+@app.route('/pokemon/add/<pokedex_number>')
+def addPokemonToAccount(pokedex_number):
+  cursor = g.conn.execute(text("INSERT INTO account_owns VALUES (:pokedex_number, :username)"), {"username":username, "pokedex_number":pokedex_number})
+  g.conn.commit()
+  cursor.close()
+  return redirect('/pokemon/')
+
+@app.route('/pokemon/delete')
+def deletePokemon():
+  cursor = g.conn.execute(text("SELECT P.pokedex_number, P.name, P.attack, P.defense, P.hp, P.sp_attack, P.sp_defense, P.speed, P.weight, P.generation, P.is_legendary FROM pokemon P, account_owns A WHERE A.username = :username AND A.pokedex_number = P.pokedex_number"), {"username":username})
+  pokemon = []
+  for result in cursor:
+    pokemon.append(result)
+  cursor.close()
+  
+  context = dict(username=username, name=name, pokemon=pokemon)
+  return render_template("delete-pokemon.html", **context)
+
+@app.route('/pokemon/delete/<pokedex_number>')
+def deletePokemonFromAccount(pokedex_number):
+  cursor = g.conn.execute(text("DELETE FROM account_owns WHERE pokedex_number = :pokedex_number AND username = :username"), {"username":username, "pokedex_number":pokedex_number})
+  g.conn.commit()
+  cursor.close()
+  return redirect('/pokemon/')
   
 @app.route('/test')
 def test():
