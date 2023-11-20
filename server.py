@@ -96,8 +96,41 @@ def teardown_request(exception):
 # see for routing: https://flask.palletsprojects.com/en/2.0.x/quickstart/?highlight=routing
 # see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
 #
+
+def loginPage(error=False):
+  print(request.args)
+  context = dict(error="Invalid login information") if error else dict(error = "")
+    
+  return render_template("login.html", **context)
+
 @app.route('/')
 def index():
+  return loginPage()
+
+@app.route('/login', methods=['POST'])
+def login():
+  print(request.form)
+  username = request.form['username']
+  password = request.form['password']
+  
+  cursor = g.conn.execute(text("SELECT * FROM account WHERE username = :username AND password = :password"), {"username":username, "password":password})
+  user = None
+  for result in cursor:
+    user = result
+  
+  if user == None:
+    return loginPage(error=True)
+  else:
+    return redirect('/home/'+username)
+    
+@app.route('/home/<username>')
+def home(username):
+  return render_template("home.html", username=username)
+  
+
+
+@app.route('/test')
+def test():
   """
   request is a special object that Flask provides to access web request information:
 
@@ -127,10 +160,10 @@ def index():
     names.append(result[0])  
 
   # Indexing result by column name
-  names = []
-  results = cursor.mappings().all()
-  for result in results:
-    names.append(result["name"])
+  # names = []
+  # results = cursor.mappings().all()
+  # for result in results:
+  #   names.append(result["name"])
   cursor.close()
 
   #
@@ -188,13 +221,7 @@ def add():
   params_dict = {"name":name}
   g.conn.execute(text('INSERT INTO test(name) VALUES (:name)'), params_dict)
   g.conn.commit()
-  return redirect('/')
-
-
-@app.route('/login')
-def login():
-    abort(401)
-    this_is_never_executed()
+  return redirect('/test')
 
 
 if __name__ == "__main__":
