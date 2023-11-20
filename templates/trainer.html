@@ -8,7 +8,6 @@
 
 	<body>
 		<h1>Trainer {{trainer[0]}}</h1>
-	</body>
 	<p>
 	<div>Region: {{trainer[3]}}</div>
 	{% if trainer[1] != None %}
@@ -30,7 +29,7 @@
 	<th>Weight</th>
 	<th>Generation</th>
 	<th>Is Legendary?</th>
-	{% for n in pokemon %}
+	{% for n in trainer_pokemon %}
 		<tr>
 		{% for p in n[:-1] %}
 			<td>{{p}}</td>
@@ -57,7 +56,7 @@
 		<th>Weight</th>
 		<th>Generation</th>
 		<th>Is Legendary?</th>
-		{% for n in your_pokemon %}
+		{% for n in pokemon %}
 			<tr>
 			{% for p in n[:-1] %}
 				<td>{{p}}</td>
@@ -71,4 +70,11 @@
 		{% endfor %}
 		</table>
 
+		<footer>
+			<p>
+				<a href="/home">Home</a>
+				<a href="/pokemon">Manage Pokemon</a>
+			</p>
+		</footer>
+	</body>
 </html>

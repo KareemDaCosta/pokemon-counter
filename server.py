@@ -219,15 +219,78 @@ def trainer(trainer_name):
   cursor.close()
   
   cursor = g.conn.execute(text("SELECT P.pokedex_number, P.name, P.attack, P.defense, P.hp, P.sp_attack, P.sp_defense, P.speed, P.weight, P.generation, P.is_legendary FROM pokemon P, trainer_owns T WHERE T.trainer_name = :trainer_name AND T.trainer_region = :trainer_region AND T.pokedex_number = P.pokedex_number"), {"trainer_name":trainer[0], "trainer_region":trainer[3]})
+  trainerPokemon = []
+  for result in cursor:
+    trainerPokemon.append(result)
+  cursor.close()
+  
+  pokemonRanking = getPokemonRanking(trainerPokemon)
+    
+  context = dict(username=username, name=name, trainer=trainer, trainer_pokemon=trainerPokemon, pokemon=pokemonRanking)
+  
+  return render_template("trainer.html", **context)
+
+def getPokemonRanking(trainerPokemon):
+  cursor = g.conn.execute(text("SELECT P.pokedex_number, P.name, P.attack, P.defense, P.hp, P.sp_attack, P.sp_defense, P.speed, P.weight, P.generation, P.is_legendary FROM pokemon P, account_owns A WHERE A.username = :username AND A.pokedex_number = P.pokedex_number"), {"username":username})
   pokemon = []
   for result in cursor:
     pokemon.append(result)
   cursor.close()
+  pokemonScores = {}
+  pokemonDict = {}
+  for myPokemon in pokemon:
+    pokemonScores[myPokemon[0]] = 0
+    pokemonDict[myPokemon[0]] = myPokemon
     
-  context = dict(username=username, name=name, trainer=trainer, pokemon=pokemon)
+    rowLookup = {
+    "bug": 1,
+    "dark": 2,
+    "dragon": 3,
+    "electric": 4,
+    "fairy": 5,
+    "fight": 6,
+    "fire": 7,
+    "flying": 8,
+    "ghost": 9,
+    "grass": 10,
+    "ground": 11,
+    "ice": 12,
+    "normal": 13,
+    "poison": 14,
+    "psychic": 15,
+    "rock": 16,
+    "steel": 17,
+    "water": 18
+  }
+    
+  pokemonTypeDict = {}
+  cursor = g.conn.execute(text("SELECT * From type"))
   
-  return render_template("trainer.html", **context)
-
+  for row in cursor:
+    pokemonTypeDict[row[0]] = row
+  cursor.close()
+    
+  for myPokemon in pokemon:
+    cursor = g.conn.execute(text("SELECT type_name FROM pokemon_type WHERE pokedex_number = :pokedex_number"), {"pokedex_number":myPokemon[0]})
+    pokemonTypes = []
+    for result in cursor:
+      pokemonTypes.append(result[0])
+    cursor.close()
+    
+    for trainersPokemon in trainerPokemon:
+      cursor = g.conn.execute(text("SELECT type_name FROM pokemon_type WHERE pokedex_number = :pokedex_number"), {"pokedex_number":trainersPokemon[0]})
+      trainerPokemonTypes = []
+      for result in cursor:
+        trainerPokemonTypes.append(result[0])
+      cursor.close()
+      for myPokemonType in pokemonTypes:
+        for trainerPokemonType in trainerPokemonTypes:
+          if pokemonTypeDict[myPokemonType][rowLookup[trainerPokemonType]] == 0.5:
+            pokemonScores[myPokemon[0]] -= 1
+          elif pokemonTypeDict[myPokemonType][rowLookup[trainerPokemonType]] == 2:
+            pokemonScores[myPokemon[0]] += 1
+  pokemon = sorted(pokemon, key=lambda x: pokemonScores[x[0]], reverse=True)
+  return pokemon
   
 @app.route('/test')
 def test():
