@@ -8,7 +8,7 @@
 
 	<body>
 		<h1>Welcome to Battlemon!</h1>
-
+		<h4> Login </h4>
 		<form method="POST" action="/login">
 			<p>
                 <div style="color: red">{{error}}</div>
@@ -17,6 +17,21 @@
 				Password:
 				<input type="password" name="password" />
 				<input type="submit" value="Login" />
+			</p>
+		</form>
+		<h4> Create Account </h4>
+		<form method="POST" action="/register">
+			<p>
+                <div style="color: red">{{createError}}</div>
+				Username:
+				<input type="text" name="username" />
+				Password:
+				<input type="password" name="password" />
+				Name (optional):
+				<input type="text" name="name" />
+				Gender (optional):
+				<input type="text" name="gender" />
+				<input type="submit" value="Create Account" />
 			</p>
 		</form>
 		<footer>

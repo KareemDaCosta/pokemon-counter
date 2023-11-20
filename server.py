@@ -19,8 +19,8 @@ app = Flask(__name__, template_folder=tmpl_dir)
 
 
 # Test default login information
-username = "Pixelte"
-name = "James"
+username = ""
+name = None
 
 
 #
@@ -102,9 +102,9 @@ def teardown_request(exception):
 # see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
 #
 
-def loginPage(error=False):
-  context = dict(error="Invalid login information") if error else dict(error = "")
-    
+def loginPage(error=False, createError = False):
+  context = dict(error="Invalid login information") if error else dict(createError = "Username already exists") if createError else dict()
+  
   return render_template("login.html", **context)
 
 @app.route('/')
@@ -113,10 +113,10 @@ def index():
 
 @app.route('/login', methods=['POST'])
 def login():
-  username = request.form['username']
+  current_username = request.form['username']
   password = request.form['password']
   
-  cursor = g.conn.execute(text("SELECT * FROM account WHERE username = :username AND password = :password"), {"username":username, "password":password})
+  cursor = g.conn.execute(text("SELECT * FROM account WHERE username = :username AND password = :password"), {"username":current_username, "password":password})
   
   user = None
   for result in cursor:
@@ -127,7 +127,39 @@ def login():
   if user == None:
     return loginPage(error=True)
   else:
+    global username 
     username = user[0]
+    global name 
+    name = user[2] if user[2] != None else username
+    return redirect('/home/')
+  
+@app.route('/register', methods=['POST'])
+def register():
+  current_username = request.form['username']
+  password = request.form['password']
+  current_name = request.form['name']
+  gender = request.form['gender']
+  try:
+    cursor = g.conn.execute(text("INSERT INTO account VALUES (:username, :password, :name, :gender)"), {"username":current_username, "password":password,"name":current_name,"gender":gender})
+    g.conn.commit()
+    cursor.close()
+  except:
+    return loginPage(createError=True)
+  
+  cursor = g.conn.execute(text("SELECT * FROM account WHERE username = :username AND password = :password"), {"username":current_username, "password":password})
+  
+  user = None
+  for result in cursor:
+    user = result
+  
+  cursor.close()
+  
+  if user == None:
+    return loginPage(error=True)
+  else:
+    global username 
+    username = user[0]
+    global name 
     name = user[2] if user[2] != None else username
     return redirect('/home/')
     
