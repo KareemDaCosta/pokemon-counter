@@ -165,6 +165,8 @@ def register():
     
 @app.route('/home/')
 def home():
+  if username == "":
+    return redirect('/')
   
   context = dict(username=username, name=name)
   
@@ -180,6 +182,8 @@ def home():
 
 @app.route('/region', methods=['POST'])
 def region():
+  if username == "":
+    return redirect('/')
   region = request.form['region'].split(';')[0] if "region" in request.form else None
   if region == None:
     return redirect('/home/')
@@ -202,6 +206,8 @@ def region():
 
 @app.route('/gym', methods=['POST'])
 def gym():
+  if username == "":
+    return redirect('/')
   gym_id = request.form['gym'].split(';')[0] if "gym" in request.form else None
   if gym_id == None:
     return redirect('/home/')
@@ -225,6 +231,8 @@ def gym():
 
 @app.route('/trainer-name/', methods=['POST'])
 def trainer_name():
+  if username == "":
+    return redirect('/')
   trainer_name = request.form['name'].split(';')[0] if "name" in request.form else None
   if trainer_name == None or trainer_name=="":
     return redirect('/home/')
@@ -232,6 +240,8 @@ def trainer_name():
 
 @app.route('/trainer-search/<trainer_name>')
 def trainer_search(trainer_name):
+  if username == "":
+    redirect('/')
   cursor = g.conn.execute(text("SELECT name FROM trainer WHERE name LIKE :trainer_name"), {"trainer_name":trainer_name+"%"})
   trainers = []
   for result in cursor:
@@ -243,6 +253,8 @@ def trainer_search(trainer_name):
 
 @app.route('/trainer/<trainer_name>')
 def trainer(trainer_name):
+  if username == "":
+    return redirect('/')
   cursor = g.conn.execute(text("SELECT * FROM trainer WHERE name = :trainer_name"), {"trainer_name":trainer_name})
   trainer = None
   for result in cursor:
@@ -321,11 +333,18 @@ def getPokemonRanking(trainerPokemon):
             pokemonScores[myPokemon[0]] -= 1
           elif pokemonTypeDict[myPokemonType][rowLookup[trainerPokemonType]] == 2:
             pokemonScores[myPokemon[0]] += 1
+          
+          if pokemonTypeDict[trainerPokemonType][rowLookup[myPokemonType]] == 0.5:
+            pokemonScores[myPokemon[0]] += 1
+          elif pokemonTypeDict[trainerPokemonType][rowLookup[myPokemonType]] == 2:
+            pokemonScores[myPokemon[0]] -= 1
   pokemon = sorted(pokemon, key=lambda x: pokemonScores[x[0]], reverse=True)
   return pokemon
 
 @app.route('/pokemon/')
 def pokemonPage():
+  if username == "":
+    return redirect('/')
   cursor = g.conn.execute(text("SELECT P.pokedex_number, P.name, P.attack, P.defense, P.hp, P.sp_attack, P.sp_defense, P.speed, P.weight, P.generation, P.is_legendary FROM pokemon P, account_owns A WHERE A.username = :username AND A.pokedex_number = P.pokedex_number"), {"username":username})
   pokemon = []
   for result in cursor:
@@ -337,6 +356,8 @@ def pokemonPage():
 
 @app.route('/pokemon/add')
 def addPokemon():
+  if username == "":
+    return redirect('/')
   cursor = g.conn.execute(text("SELECT * FROM pokemon P WHERE P.pokedex_number NOT IN (SELECT P.pokedex_number FROM pokemon P, account_owns A WHERE A.username = :username AND A.pokedex_number = P.pokedex_number)"), {"username":username})
   pokemon = []
   for result in cursor:
@@ -348,6 +369,8 @@ def addPokemon():
 
 @app.route('/pokemon-name/', methods=['POST'])
 def pokemon_name():
+  if username == "":
+    return redirect('/')
   pokemon_name = request.form['name'].split(';')[0] if "name" in request.form else None
   if pokemon_name == None or pokemon_name=="":
     return redirect('/home/')
@@ -356,6 +379,8 @@ def pokemon_name():
 
 @app.route('/pokemon-search/<pokemon_name>')
 def pokemon_search(pokemon_name):
+  if username == "":
+    return redirect('/')
   cursor = g.conn.execute(text("SELECT * FROM pokemon WHERE name LIKE :pokemon_name"), {"pokemon_name":pokemon_name+"%"})
   pokemon = []
   for result in cursor:
@@ -368,6 +393,8 @@ def pokemon_search(pokemon_name):
 
 @app.route('/pokemon/add/<pokedex_number>')
 def addPokemonToAccount(pokedex_number):
+  if username == "":
+    return redirect('/')
   cursor = g.conn.execute(text("INSERT INTO account_owns VALUES (:pokedex_number, :username)"), {"username":username, "pokedex_number":pokedex_number})
   g.conn.commit()
   cursor.close()
@@ -375,6 +402,8 @@ def addPokemonToAccount(pokedex_number):
 
 @app.route('/pokemon/delete')
 def deletePokemon():
+  if username == "":
+    return redirect('/')
   cursor = g.conn.execute(text("SELECT P.pokedex_number, P.name, P.attack, P.defense, P.hp, P.sp_attack, P.sp_defense, P.speed, P.weight, P.generation, P.is_legendary FROM pokemon P, account_owns A WHERE A.username = :username AND A.pokedex_number = P.pokedex_number"), {"username":username})
   pokemon = []
   for result in cursor:
@@ -386,6 +415,8 @@ def deletePokemon():
 
 @app.route('/pokemon/delete/<pokedex_number>')
 def deletePokemonFromAccount(pokedex_number):
+  if username == "":
+    return redirect('/')
   cursor = g.conn.execute(text("DELETE FROM account_owns WHERE pokedex_number = :pokedex_number AND username = :username"), {"username":username, "pokedex_number":pokedex_number})
   g.conn.commit()
   cursor.close()
