@@ -148,7 +148,7 @@ def home():
 
 @app.route('/region', methods=['POST'])
 def region():
-  region = request.form['region'] if "region" in request.form else None
+  region = request.form['region'].split(';')[0] if "region" in request.form else None
   if region == None:
     return redirect('/home/')
 
@@ -170,7 +170,7 @@ def region():
 
 @app.route('/gym', methods=['POST'])
 def gym():
-  gym_id = request.form['gym'] if "gym" in request.form else None
+  gym_id = request.form['gym'].split(';')[0] if "gym" in request.form else None
   if gym_id == None:
     return redirect('/home/')
   gym_id = gym_id.split('|')
@@ -193,7 +193,7 @@ def gym():
 
 @app.route('/trainer-name/', methods=['POST'])
 def trainer_name():
-  trainer_name = request.form['name'] if "name" in request.form else None
+  trainer_name = request.form['name'].split(';')[0] if "name" in request.form else None
   if trainer_name == None or trainer_name=="":
     return redirect('/home/')
   return redirect('/trainer-search/'+trainer_name)
@@ -316,7 +316,7 @@ def addPokemon():
 
 @app.route('/pokemon-name/', methods=['POST'])
 def pokemon_name():
-  pokemon_name = request.form['name'] if "name" in request.form else None
+  pokemon_name = request.form['name'].split(';')[0] if "name" in request.form else None
   if pokemon_name == None or pokemon_name=="":
     return redirect('/home/')
   return redirect('/pokemon-search/'+pokemon_name)
