@@ -15,16 +15,10 @@
 				<input type="submit" value="Search By Trainer Name" />
 			</p>
 		</form>
-		<form method="POST" action="/region">
-			<p>
-				<div>
-                    {% for n in games %} 
-                       <input type="radio" id={{n}} name="region" value={{n}}>
-                        <label for={{n}}>{{n}}</label><br>
-                    {% endfor %}
-                </div>
-				<input type="submit" value="Search By Region" />
-			</p>
-		</form>
+		<ul>
+			{% for n in trainers %}
+			<li><a href="/trainer/{{n}}">{{n}}</a></li>
+			{% endfor %}
+		</ul>
 	</body>
 </html>

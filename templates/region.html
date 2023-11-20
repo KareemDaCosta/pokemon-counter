@@ -1,0 +1,35 @@
+<html>
+	<style>
+		body {
+			font-size: 15pt;
+			font-family: arial;
+		}
+	</style>
+
+	<body>
+		<h1>Welcome back to Battlemon, {{name}}!</h1>
+		<div style="color: red">{{error}}</div>
+		<form method="POST" action="/trainer-name">
+			<p>
+				<input type="text" name="name" />
+				<input type="submit" value="Search By Trainer Name" />
+			</p>
+		</form>
+		<form method="POST" action="/gym">
+			<p>
+				<div>
+                    {% for n in gyms %}
+                        <input type="radio" id="{{n[0]}}|{{n[1]}}" name="gym" value="{{n[0]}}|{{n[1]}}">
+                        <label for="{{n[0]}}|{{n[1]}}">{{n[0]}} ({{n[1]}}, {{n[2]}})</label><br>
+                    {% endfor %}
+                </div>
+				<input type="submit" value="Search By Gym" />
+			</p>
+		</form>
+        <ul>
+            {% for n in trainers %}
+            <li><a href="/trainer/{{n}}">{{n}}</a></li>
+            {% endfor %}
+        </ul>
+	</body>
+</html>

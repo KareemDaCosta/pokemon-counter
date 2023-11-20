@@ -18,6 +18,11 @@ tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
 
+# Test default login information
+username = "Pixelte"
+name = "James"
+
+
 #
 # The following is a dummy URI that does not connect to a valid database. You will need to modify it to connect to your Part 2 database in order to use the data.
 #
@@ -98,7 +103,6 @@ def teardown_request(exception):
 #
 
 def loginPage(error=False):
-  print(request.args)
   context = dict(error="Invalid login information") if error else dict(error = "")
     
   return render_template("login.html", **context)
@@ -109,26 +113,121 @@ def index():
 
 @app.route('/login', methods=['POST'])
 def login():
-  print(request.form)
   username = request.form['username']
   password = request.form['password']
   
   cursor = g.conn.execute(text("SELECT * FROM account WHERE username = :username AND password = :password"), {"username":username, "password":password})
+  
   user = None
   for result in cursor:
     user = result
   
+  cursor.close()
+  
   if user == None:
     return loginPage(error=True)
   else:
-    return redirect('/home/'+username)
+    username = user[0]
+    name = user[2] if user[2] != None else username
+    return redirect('/home/')
     
-@app.route('/home/<username>')
-def home(username):
-  return render_template("home.html", username=username)
+@app.route('/home/')
+def home():
   
+  context = dict(username=username, name=name)
+  
+  cursor = g.conn.execute(text("SELECT region FROM game"))
+  games = []
+  for result in cursor:
+    games.append(result[0])
+  cursor.close()
+  
+  context["games"] = games
+  
+  return render_template("home.html", **context)
 
+@app.route('/region', methods=['POST'])
+def region():
+  region = request.form['region'] if "region" in request.form else None
+  if region == None:
+    return redirect('/home/')
 
+  cursor = g.conn.execute(text("SELECT name FROM trainer WHERE region = :region"), {"region":region})
+  trainers = []
+  for result in cursor:
+    trainers.append(result[0])
+  cursor.close()
+
+  cursor = g.conn.execute(text("SELECT name, type, badge_name FROM gym WHERE region = :region"), {"region":region})
+  gyms = []
+  for result in cursor:
+    gyms.append((result[0], result[1][0].upper() + result[1][1:], result[2]))
+  cursor.close()
+
+  context = dict(username=username, name=name, trainers=trainers, gyms=gyms)
+
+  return render_template("region.html", **context)
+
+@app.route('/gym', methods=['POST'])
+def gym():
+  gym_id = request.form['gym'] if "gym" in request.form else None
+  if gym_id == None:
+    return redirect('/home/')
+  gym_id = gym_id.split('|')
+  gym_name = ""
+  for x in gym_id[:-1]:
+    gym_name += x
+  gym_type = gym_id[-1]
+  gym_type = gym_type.lower()
+  
+  cursor = g.conn.execute(text("SELECT name FROM trainer WHERE gym_name = :gym_name AND gym_type = :gym_type"), {"gym_name":gym_name, "gym_type":gym_type})
+  trainers = []
+  for result in cursor:
+    trainers.append(result[0])
+  cursor.close()
+  context = dict(username=username, name=name, trainers=trainers)
+  if (len(trainers) == 1):
+    return redirect('/trainer/'+trainers[0])
+  
+  return render_template("gym.html", **context)
+
+@app.route('/trainer/<trainer_name>')
+def trainer(trainer_name):
+  cursor = g.conn.execute(text("SELECT * FROM trainer WHERE name = :trainer_name"), {"trainer_name":trainer_name})
+  trainer = None
+  for result in cursor:
+    trainer = result
+  cursor.close()
+  
+  cursor = g.conn.execute(text("SELECT P.pokedex_number, P.name, P.attack, P.defense, P.hp, P.sp_attack, P.sp_defense, P.speed, P.weight, P.generation, P.is_legendary FROM pokemon P, trainer_owns T WHERE T.trainer_name = :trainer_name AND T.trainer_region = :trainer_region AND T.pokedex_number = P.pokedex_number"), {"trainer_name":trainer[0], "trainer_region":trainer[3]})
+  pokemon = []
+  for result in cursor:
+    pokemon.append(result)
+  cursor.close()
+    
+  context = dict(username=username, name=name, trainer=trainer, pokemon=pokemon)
+  
+  return render_template("trainer.html", **context)
+
+@app.route('/trainer-name/', methods=['POST'])
+def trainer_name():
+  trainer_name = request.form['name'] if "name" in request.form else None
+  if trainer_name == None:
+    return redirect('/home/')
+  return redirect('/trainer-search/'+trainer_name)
+
+@app.route('/trainer-search/<trainer_name>')
+def trainer_search(trainer_name):
+  cursor = g.conn.execute(text("SELECT name FROM trainer WHERE name LIKE :trainer_name"), {"trainer_name":trainer_name+"%"})
+  trainers = []
+  for result in cursor:
+    trainers.append(result[0])
+  cursor.close()
+  context = dict(username=username, name=name, trainers=trainers)
+
+  return render_template("trainer-search.html", **context)
+
+  
 @app.route('/test')
 def test():
   """
