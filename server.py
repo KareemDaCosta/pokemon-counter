@@ -130,7 +130,7 @@ def login():
     global username 
     username = user[0]
     global name 
-    name = user[2] if user[2] != None else username
+    name = user[2] if user[2] != None and user[2] != "" else username
     return redirect('/home/')
   
 @app.route('/register', methods=['POST'])
@@ -160,7 +160,8 @@ def register():
     global username 
     username = user[0]
     global name 
-    name = user[2] if user[2] != None else username
+    name = user[2] if user[2] != "" and user[2] != None else user[0]
+    print(username, name, user)
     return redirect('/home/')
     
 @app.route('/home/')
@@ -281,40 +282,37 @@ def getPokemonRanking(trainerPokemon):
     pokemon.append(result)
   cursor.close()
   pokemonScores = {}
-  pokemonDict = {}
-  for myPokemon in pokemon:
-    pokemonScores[myPokemon[0]] = 0
-    pokemonDict[myPokemon[0]] = myPokemon
-    
-    rowLookup = {
-    "bug": 1,
-    "dark": 2,
-    "dragon": 3,
-    "electric": 4,
-    "fairy": 5,
-    "fighting": 6,
-    "fire": 7,
-    "flying": 8,
-    "ghost": 9,
-    "grass": 10,
-    "ground": 11,
-    "ice": 12,
-    "normal": 13,
-    "poison": 14,
-    "psychic": 15,
-    "rock": 16,
-    "steel": 17,
-    "water": 18
+  
+  rowLookup = {
+  "bug": 1,
+  "dark": 2,
+  "dragon": 3,
+  "electric": 4,
+  "fairy": 5,
+  "fighting": 6,
+  "fire": 7,
+  "flying": 8,
+  "ghost": 9,
+  "grass": 10,
+  "ground": 11,
+  "ice": 12,
+  "normal": 13,
+  "poison": 14,
+  "psychic": 15,
+  "rock": 16,
+  "steel": 17,
+  "water": 18
   }
     
   pokemonTypeDict = {}
   cursor = g.conn.execute(text("SELECT * From type"))
-  
+
   for row in cursor:
     pokemonTypeDict[row[0]] = row
   cursor.close()
     
   for myPokemon in pokemon:
+    pokemonScores[myPokemon[0]] = 0
     cursor = g.conn.execute(text("SELECT type_name FROM pokemon_type WHERE pokedex_number = :pokedex_number"), {"pokedex_number":myPokemon[0]})
     pokemonTypes = []
     for result in cursor:
